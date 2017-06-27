@@ -357,4 +357,35 @@ describe('AccountsTree', () => {
 
         })().then(done, done.fail);
     });
+
+    it('can clear and resume from a cleared tree', (done) => {
+        (async function () {
+            const tree = await AccountsTree.createVolatile();
+
+            const address1 = new Address(BufferUtils.fromHex(new Array(40).fill(9).join('')));
+            const account1 = new Account(new Balance(132, 49));
+            await tree.put(address1, account1);
+
+            // expect root and terminal with shortcut == address
+            expect((await tree.export()).length).toBe(2);
+            const obtained1 = await tree.get(address1);
+            expect(obtained1).toEqual(account1);
+
+            // now clean
+            await tree.clear();
+
+            // now expect only the root node to exist (initial state as defined by constructor)
+            expect((await tree.export()).length).toBe(1);
+
+            // now add a node again
+            const address2 = new Address(BufferUtils.fromHex(new Array(40).fill(3).join('')));
+            const account2 = new Account(new Balance(12, 3));
+            await tree.put(address2, account2);
+
+            // again expect root and terminal with shortcut == address
+            expect((await tree.export()).length).toBe(2);
+            const obtained2 = await tree.get(address2);
+            expect(obtained2).toEqual(account2);
+        })().then(done, done.fail);
+    });
 });
