@@ -48,6 +48,21 @@ describe('AccountsTree', () => {
     // for each test, create a specialized version that runs on exactly the provided account tree type.
     treeBuilders.forEach((treeBuilder) => {
 
+        it(`can get the root from its node store (${  treeBuilder.type  })`, (done) => {
+            (async function () {
+                const tree = await treeBuilder.builder();
+                const store = tree._store;
+
+                const treeRoot = await tree.root();
+                const storeRoot = await store.getRootKey();
+                expect(Hash.fromBase64(storeRoot)).toEqual(treeRoot);
+
+                expect(await store.get(storeRoot)).toBeDefined();
+
+
+            })().then(done, done.fail);
+        });
+
         it(`has a 32 bytes root hash (${  treeBuilder.type  })` , (done) => {
             const account1 = new Account(new Balance(80000, 8));
             const address = Address.unserialize(BufferUtils.fromBase64(Dummy.address1));
